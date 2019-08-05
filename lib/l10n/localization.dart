@@ -32,8 +32,7 @@ class FFULocalizations {
 
   String get signInTitle => _translationBundle.signInTitle;
 
-  String get passwordInvalidMessage =>
-      _translationBundle.passwordInvalidMessage;
+  String get passwordInvalidMessage => _translationBundle.passwordInvalidMessage;
 
   String get recoverPasswordTitle => _translationBundle.recoverPasswordTitle;
 
@@ -55,17 +54,14 @@ class FFULocalizations {
   String get errorOccurred => _translationBundle.errorOccurred;
 
   static Future<FFULocalizations> load(Locale locale) {
-    return new SynchronousFuture<FFULocalizations>(
-        new FFULocalizations(locale));
+    return new SynchronousFuture<FFULocalizations>(new FFULocalizations(locale));
   }
 
   static FFULocalizations of(BuildContext context) {
-    return Localizations.of<FFULocalizations>(context, FFULocalizations) ??
-        new _DefaultFFULocalizations();
+    return Localizations.of<FFULocalizations>(context, FFULocalizations) ?? new _DefaultFFULocalizations();
   }
 
-  static const LocalizationsDelegate<FFULocalizations> delegate =
-      const _FFULocalizationsDelegate();
+  static const LocalizationsDelegate<FFULocalizations> delegate = const _FFULocalizationsDelegate();
 
   String allReadyEmailMessage(String email, String providerName) =>
       _translationBundle.allReadyEmailMessage(email, providerName);
@@ -77,8 +73,7 @@ class _DefaultFFULocalizations extends FFULocalizations {
   _DefaultFFULocalizations() : super(const Locale('en', 'US'));
 }
 
-class _FFULocalizationsDelegate
-    extends LocalizationsDelegate<FFULocalizations> {
+class _FFULocalizationsDelegate extends LocalizationsDelegate<FFULocalizations> {
   const _FFULocalizationsDelegate();
 
   static const List<String> _supportedLanguages = const <String>[
@@ -90,8 +85,7 @@ class _FFULocalizationsDelegate
   ];
 
   @override
-  bool isSupported(Locale locale) =>
-      _supportedLanguages.contains(locale.languageCode);
+  bool isSupported(Locale locale) => _supportedLanguages.contains(locale.languageCode);
 
   @override
   Future<FFULocalizations> load(Locale locale) => FFULocalizations.load(locale);

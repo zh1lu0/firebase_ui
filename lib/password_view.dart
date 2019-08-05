@@ -43,8 +43,7 @@ class _PasswordViewState extends State<PasswordView> {
                   controller: _controllerEmail,
                   keyboardType: TextInputType.emailAddress,
                   autocorrect: false,
-                  decoration: new InputDecoration(
-                      labelText: FFULocalizations.of(context).emailLabel),
+                  decoration: new InputDecoration(labelText: FFULocalizations.of(context).emailLabel),
                 ),
                 //const SizedBox(height: 5.0),
                 new TextField(
@@ -53,8 +52,7 @@ class _PasswordViewState extends State<PasswordView> {
                   onSubmitted: _submit,
                   obscureText: true,
                   autocorrect: false,
-                  decoration: new InputDecoration(
-                      labelText: FFULocalizations.of(context).passwordLabel),
+                  decoration: new InputDecoration(labelText: FFULocalizations.of(context).passwordLabel),
                 ),
                 new SizedBox(height: 16.0),
                 new Container(
@@ -93,8 +91,7 @@ class _PasswordViewState extends State<PasswordView> {
   }
 
   _handleLostPassword() {
-    Navigator.of(context)
-        .push(new MaterialPageRoute<Null>(builder: (BuildContext context) {
+    Navigator.of(context).push(new MaterialPageRoute<Null>(builder: (BuildContext context) {
       return new TroubleSignIn(_controllerEmail.text);
     }));
   }
@@ -103,9 +100,9 @@ class _PasswordViewState extends State<PasswordView> {
     FirebaseAuth _auth = FirebaseAuth.instance;
     FirebaseUser user;
     try {
-      user = await _auth.signInWithEmailAndPassword(
-          email: _controllerEmail.text, password: _controllerPassword.text);
-      print(user);
+      AuthResult authResult =
+          await _auth.signInWithEmailAndPassword(email: _controllerEmail.text, password: _controllerPassword.text);
+      user = authResult.user;
     } catch (exception) {
       //TODO improve errors catching
       String msg = FFULocalizations.of(context).passwordInvalidMessage;

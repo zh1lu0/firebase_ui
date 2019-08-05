@@ -1,10 +1,11 @@
 library firebase_ui;
 
-export 'utils.dart';
-
 import 'package:flutter/material.dart';
+
 import 'login_view.dart';
 import 'utils.dart';
+
+export 'utils.dart';
 
 class SignInScreen extends StatefulWidget {
   SignInScreen(
@@ -15,8 +16,6 @@ class SignInScreen extends StatefulWidget {
       this.signUpPasswordCheck,
       this.providers,
       this.color = Colors.white,
-      this.twitterConsumerKey,
-      this.twitterConsumerSecret,
       @required this.showBar,
       @required this.avoidBottomInset,
       @required this.bottomPadding,
@@ -29,8 +28,6 @@ class SignInScreen extends StatefulWidget {
   final List<ProvidersTypes> providers;
   final Color color;
   final bool signUpPasswordCheck;
-  final String twitterConsumerKey;
-  final String twitterConsumerSecret;
   final bool showBar;
   final bool avoidBottomInset;
   final double horizontalPadding;
@@ -46,8 +43,7 @@ class _SignInScreenState extends State<SignInScreen> {
 
   bool get _passwordCheck => widget.signUpPasswordCheck ?? false;
 
-  List<ProvidersTypes> get _providers =>
-      widget.providers ?? [ProvidersTypes.email];
+  List<ProvidersTypes> get _providers => widget.providers ?? [ProvidersTypes.email];
 
   @override
   Widget build(BuildContext context) => new Scaffold(
@@ -68,13 +64,10 @@ class _SignInScreenState extends State<SignInScreen> {
                   _header,
                   new Expanded(
                     child: new Padding(
-                        padding: EdgeInsets.symmetric(
-                            horizontal: widget.horizontalPadding),
+                        padding: EdgeInsets.symmetric(horizontal: widget.horizontalPadding),
                         child: LoginView(
                           providers: _providers,
                           passwordCheck: _passwordCheck,
-                          twitterConsumerKey: widget.twitterConsumerKey,
-                          twitterConsumerSecret: widget.twitterConsumerSecret,
                           bottomPadding: widget.bottomPadding,
                         )),
                   ),

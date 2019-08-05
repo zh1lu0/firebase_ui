@@ -1,3 +1,7 @@
+## [1.0.8] - on going
+* upgrade firebase_auth version
+* remove twitter due to iOS build error ( TwitterKit )
+
 ## [1.0.7] - 21/5/2019
 * fixed padding
 
@@ -10,10 +14,9 @@
 * update dependencies
 * fixing twitter
 
-
 ## [1.0.1] - 29/4/2019
 * update dependencies
-* added custon padding to buttoms
+* added custom padding to buttons
 * added avoidBottomInset
 
 ## [0.0.19] - 19/12/2018
@@ -41,13 +44,13 @@
 * improve UI
 
 ## [0.0.7] - 04/07/2018
-* fixe sign in with mail 
+* fix sign in with mail
 
 ## [0.0.6] - 30/05/2018
 * improve show dialog error 
 
 ## [0.0.5] - 29/05/2018
-* show error occured on unknown errors
+* show error occurred on unknown errors
 * display email if no displayName (example)
 * secure providers test, firebase_auth behavior change
 * pop sign up !

@@ -1,9 +1,9 @@
 import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
 import 'package:firebase_ui/flutter_firebase_ui.dart';
 import 'package:firebase_ui/l10n/localization.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 void main() => runApp(new MyApp());
@@ -78,14 +78,7 @@ class _MyHomePageState extends State<MyHomePage> {
         bottomPadding: 5,
         avoidBottomInset: true,
         color: Color(0xFF363636),
-        providers: [
-          ProvidersTypes.google,
-          ProvidersTypes.facebook,
-          ProvidersTypes.twitter,
-          ProvidersTypes.email
-        ],
-        twitterConsumerKey: "",
-        twitterConsumerSecret: "", horizontalPadding: 12,
+        providers: [ProvidersTypes.google, ProvidersTypes.facebook, ProvidersTypes.email],
       );
     } else {
       return new HomeScreen(user: _currentUser);
@@ -135,8 +128,7 @@ class HomeScreen extends StatelessWidget {
               new SizedBox(
                 height: 32.0,
               ),
-              new RaisedButton(
-                  child: new Text("DECONNEXION"), onPressed: _logout)
+              new RaisedButton(child: new Text("DECONNEXION"), onPressed: _logout)
             ],
           )));
 

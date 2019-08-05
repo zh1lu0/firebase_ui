@@ -1,7 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_facebook_login/flutter_facebook_login.dart';
-import 'package:flutter_twitter/flutter_twitter.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 import 'email_view.dart';
@@ -10,18 +9,9 @@ import 'utils.dart';
 class LoginView extends StatefulWidget {
   final List<ProvidersTypes> providers;
   final bool passwordCheck;
-  final String twitterConsumerKey;
-  final String twitterConsumerSecret;
   final double bottomPadding;
 
-  LoginView(
-      {Key key,
-      @required this.providers,
-      this.passwordCheck,
-      this.twitterConsumerKey,
-      this.twitterConsumerSecret,
-      @required this.bottomPadding})
-      : super(key: key);
+  LoginView({Key key, @required this.providers, this.passwordCheck, @required this.bottomPadding}) : super(key: key);
 
   @override
   _LoginViewState createState() => new _LoginViewState();
@@ -72,29 +62,6 @@ class _LoginViewState extends State<LoginView> {
     }
   }
 
-  _handleTwitterSignIn() async {
-    var twitterLogin = new TwitterLogin(
-      consumerKey: widget.twitterConsumerKey,
-      consumerSecret: widget.twitterConsumerSecret,
-    );
-
-    final TwitterLoginResult result = await twitterLogin.authorize();
-
-    switch (result.status) {
-      case TwitterLoginStatus.loggedIn:
-        AuthCredential credential =
-            TwitterAuthProvider.getCredential(authToken: result.session.token, authTokenSecret: result.session.secret);
-        await _auth.signInWithCredential(credential);
-        break;
-      case TwitterLoginStatus.cancelledByUser:
-        showErrorDialog(context, 'Login cancelled.');
-        break;
-      case TwitterLoginStatus.error:
-        showErrorDialog(context, result.errorMessage);
-        break;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     _buttons = {
@@ -102,8 +69,6 @@ class _LoginViewState extends State<LoginView> {
           providersDefinitions(context)[ProvidersTypes.facebook].copyWith(onSelected: _handleFacebookSignIn),
       ProvidersTypes.google:
           providersDefinitions(context)[ProvidersTypes.google].copyWith(onSelected: _handleGoogleSignIn),
-      ProvidersTypes.twitter:
-          providersDefinitions(context)[ProvidersTypes.twitter].copyWith(onSelected: _handleTwitterSignIn),
       ProvidersTypes.email:
           providersDefinitions(context)[ProvidersTypes.email].copyWith(onSelected: _handleEmailSignIn),
     };
@@ -123,8 +88,6 @@ class _LoginViewState extends State<LoginView> {
       _handleFacebookSignIn();
     } else if (provider == ProvidersTypes.google) {
       _handleGoogleSignIn();
-    } else if (provider == ProvidersTypes.twitter) {
-      _handleTwitterSignIn();
     }
   }
 }

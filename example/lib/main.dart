@@ -64,24 +64,20 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     if (_currentUser == null) {
-      return new SignInScreen(
+      return SignInScreen(
         title: "Demo",
-        header: new Padding(
-          padding: const EdgeInsets.symmetric(vertical: 16.0),
-          child: new Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: new Text("Demo"),
-          ),
+        header: SizedBox(
+          height: MediaQuery.of(context).size.height / 5,
         ),
         showBar: true,
-        // horizontalPadding: 8,
-        bottomPadding: 5,
+        horizontalPadding: 24.0,
+        bottomPadding: 8.0,
         avoidBottomInset: true,
         color: Color(0xFF363636),
         providers: [ProvidersTypes.google, ProvidersTypes.facebook, ProvidersTypes.email],
       );
     } else {
-      return new HomeScreen(user: _currentUser);
+      return HomeScreen(user: _currentUser);
     }
   }
 
@@ -104,31 +100,31 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => new Scaffold(
-      appBar: new AppBar(
-        title: new Text("Bienvenue"),
+      appBar: AppBar(
+        title: Text("Bienvenue"),
         elevation: 4.0,
       ),
-      body: new Container(
+      body: Container(
           padding: const EdgeInsets.all(16.0),
-          decoration: new BoxDecoration(color: Colors.amber),
-          child: new Column(
+          decoration: BoxDecoration(color: Colors.amber),
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              new Row(
+              Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
-                  new Text("Welcome,"),
+                  Text("Welcome,"),
                 ],
               ),
-              new SizedBox(
+              SizedBox(
                 height: 8.0,
               ),
-              new Text(user.displayName ?? user.email),
-              new SizedBox(
+              Text(user.displayName ?? user.email),
+              SizedBox(
                 height: 32.0,
               ),
-              new RaisedButton(child: new Text("DECONNEXION"), onPressed: _logout)
+              RaisedButton(child: new Text("DECONNEXION"), onPressed: _logout)
             ],
           )));
 

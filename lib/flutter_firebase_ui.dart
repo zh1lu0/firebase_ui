@@ -7,12 +7,31 @@ import 'utils.dart';
 
 export 'utils.dart';
 
+class EmailLinkParameter {
+  final String url;
+  final bool handleCodeInApp;
+  final String iOSBundleID;
+  final String androidPackageName;
+  final bool androidInstallIfNotAvailable;
+  final String androidMinimumVersion;
+
+  EmailLinkParameter(
+      {@required this.url,
+      @required this.handleCodeInApp,
+      @required this.iOSBundleID,
+      @required this.androidPackageName,
+      @required this.androidInstallIfNotAvailable,
+      @required this.androidMinimumVersion});
+}
+
 class SignInScreen extends StatefulWidget {
   SignInScreen(
       {Key key,
       this.title,
       this.header,
       this.footer,
+      this.emailWithLink = false,
+      this.emailLinkParameter,
       this.signUpPasswordCheck,
       this.providers,
       this.color = Colors.white,
@@ -20,13 +39,16 @@ class SignInScreen extends StatefulWidget {
       @required this.avoidBottomInset,
       @required this.bottomPadding,
       @required this.horizontalPadding})
-      : super(key: key);
+      : assert(!emailWithLink || (emailWithLink && emailLinkParameter != null)),
+        super(key: key);
 
   final String title;
   final Widget header;
   final Widget footer;
   final List<ProvidersTypes> providers;
   final Color color;
+  final bool emailWithLink;
+  final EmailLinkParameter emailLinkParameter;
   final bool signUpPasswordCheck;
   final bool showBar;
   final bool avoidBottomInset;
@@ -34,46 +56,56 @@ class SignInScreen extends StatefulWidget {
   final double bottomPadding;
 
   @override
-  _SignInScreenState createState() => new _SignInScreenState();
+  _SignInScreenState createState() => _SignInScreenState();
 }
 
 class _SignInScreenState extends State<SignInScreen> {
-  Widget get _header => widget.header ?? new Container();
-  Widget get _footer => widget.footer ?? new Container();
+  Widget get _header => widget.header ?? Container();
+  Widget get _footer => widget.footer ?? Container();
 
   bool get _passwordCheck => widget.signUpPasswordCheck ?? false;
+  bool get _emailWithLink => widget.emailWithLink ?? false;
+  EmailLinkParameter get _emailLinkParameter =>
+      widget.emailLinkParameter ?? null;
 
-  List<ProvidersTypes> get _providers => widget.providers ?? [ProvidersTypes.email];
+  List<ProvidersTypes> get _providers =>
+      widget.providers ?? [ProvidersTypes.email];
 
   @override
-  Widget build(BuildContext context) => new Scaffold(
-      appBar: widget.showBar
-          ? new AppBar(
-              title: new Text(widget.title),
-              elevation: 4.0,
-            )
-          : null,
-      resizeToAvoidBottomInset: widget.avoidBottomInset,
-      body: new Builder(
-        builder: (BuildContext context) {
-          return new Container(
-              decoration: new BoxDecoration(color: widget.color),
-              child: new Column(
+  Widget build(BuildContext context) => Scaffold(
+        appBar: widget.showBar
+            ? AppBar(
+                title: Text(widget.title),
+                elevation: 4.0,
+              )
+            : null,
+        resizeToAvoidBottomInset: widget.avoidBottomInset,
+        body: Builder(
+          builder: (BuildContext context) {
+            return Container(
+              decoration: BoxDecoration(color: widget.color),
+              child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
                   _header,
-                  new Expanded(
-                    child: new Padding(
-                        padding: EdgeInsets.symmetric(horizontal: widget.horizontalPadding),
-                        child: LoginView(
-                          providers: _providers,
-                          passwordCheck: _passwordCheck,
-                          bottomPadding: widget.bottomPadding,
-                        )),
+                  Expanded(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(
+                          horizontal: widget.horizontalPadding),
+                      child: LoginView(
+                        providers: _providers,
+                        emailWithLink: _emailWithLink,
+                        emailLinkParameter: _emailLinkParameter,
+                        passwordCheck: _passwordCheck,
+                        bottomPadding: widget.bottomPadding,
+                      ),
+                    ),
                   ),
                   _footer
                 ],
-              ));
-        },
-      ));
+              ),
+            );
+          },
+        ),
+      );
 }

@@ -1,31 +1,108 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
+import 'package:firebase_ui/flutter_firebase_ui.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_facebook_login/flutter_facebook_login.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'email_view.dart';
 import 'utils.dart';
 
 class LoginView extends StatefulWidget {
   final List<ProvidersTypes> providers;
+  final bool emailWithLink;
+  final EmailLinkParameter emailLinkParameter;
   final bool passwordCheck;
   final double bottomPadding;
 
-  LoginView({Key key, @required this.providers, this.passwordCheck, @required this.bottomPadding}) : super(key: key);
+  LoginView(
+      {Key key,
+      @required this.providers,
+      this.emailWithLink,
+      this.emailLinkParameter,
+      this.passwordCheck,
+      @required this.bottomPadding})
+      : super(key: key);
 
   @override
-  _LoginViewState createState() => new _LoginViewState();
+  _LoginViewState createState() => _LoginViewState();
 }
 
 class _LoginViewState extends State<LoginView> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
+  bool _busy = false;
+
   Map<ProvidersTypes, ButtonDescription> _buttons;
 
+  @override
+  void initState() {
+    super.initState();
+    this._initDynamicLinks();
+  }
+
+  _setBusy(bool busy) {
+    setState(() {
+      _busy = busy;
+    });
+  }
+
+  void _initDynamicLinks() async {
+    final PendingDynamicLinkData data =
+        await FirebaseDynamicLinks.instance.getInitialLink();
+    final Uri deepLink = data?.link;
+    print('initial link $deepLink');
+    if (deepLink != null) {
+      if (await _auth.isSignInWithEmailLink(deepLink.toString())) {
+        await _hanleLinkSignIn(deepLink.toString());
+      }
+    }
+
+    FirebaseDynamicLinks.instance.onLink(
+        onSuccess: (PendingDynamicLinkData dynamicLink) async {
+      final Uri deepLink = dynamicLink?.link;
+      print('on link $deepLink');
+      if (deepLink != null) {
+        if (await _auth.isSignInWithEmailLink(deepLink.toString())) {
+          await _hanleLinkSignIn(deepLink.toString());
+        }
+      }
+    }, onError: (OnLinkErrorException e) async {
+      print('onLinkError');
+      print(e.message);
+    });
+  }
+
+  _hanleLinkSignIn(String link) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String email = prefs.getString(kLoginEmail) ?? "";
+    print("get email from shared preferences $email and $link");
+    if (email == "") {
+      // TODO:  prompt to input email
+      return false;
+    }
+    try {
+      await _auth.signInWithEmailAndLink(email: email, link: link);
+      Navigator.popUntil(context, (Route<dynamic> route) => route.isFirst);
+    } on PlatformException catch (ex) {
+      processPlatformException(context, ex);
+    } catch (e) {
+      showErrorDialog(context, e.details);
+    }
+  }
+
   _handleEmailSignIn() async {
-    String value = await Navigator.of(context).push(new MaterialPageRoute<String>(builder: (BuildContext context) {
-      return new EmailView(widget.passwordCheck);
-    }));
+    String value = await Navigator.of(context).push(
+      MaterialPageRoute<String>(builder: (BuildContext context) {
+        return EmailView(
+          emailWithLink: widget.emailWithLink,
+          emailLinkParameter: widget.emailLinkParameter,
+          passwordCheck: widget.passwordCheck,
+        );
+      }),
+    );
 
     if (value != null) {
       _followProvider(value);
@@ -33,53 +110,82 @@ class _LoginViewState extends State<LoginView> {
   }
 
   _handleGoogleSignIn() async {
+    _setBusy(true);
     GoogleSignInAccount googleUser = await googleSignIn.signIn();
     if (googleUser != null) {
       GoogleSignInAuthentication googleAuth = await googleUser.authentication;
       if (googleAuth.accessToken != null) {
         try {
-          AuthCredential credential =
-              GoogleAuthProvider.getCredential(idToken: googleAuth.idToken, accessToken: googleAuth.accessToken);
-          AuthResult result = await _auth.signInWithCredential(credential);
-          print(result.user);
+          AuthCredential credential = GoogleAuthProvider.getCredential(
+              idToken: googleAuth.idToken, accessToken: googleAuth.accessToken);
+          await _auth.signInWithCredential(credential);
+        } on PlatformException catch (ex) {
+          processPlatformException(context, ex);
         } catch (e) {
           showErrorDialog(context, e.details);
         }
       }
     }
+    _setBusy(false);
   }
 
   _handleFacebookSignIn() async {
-    FacebookLoginResult facebookResult = await facebookLogin.logInWithReadPermissions(['email']);
+    _setBusy(true);
+    FacebookLoginResult facebookResult =
+        await facebookLogin.logInWithReadPermissions(['email']);
     if (facebookResult.accessToken != null) {
       try {
-        AuthCredential credential = FacebookAuthProvider.getCredential(accessToken: facebookResult.accessToken.token);
-        AuthResult result = await _auth.signInWithCredential(credential);
-        print(result.user);
+        AuthCredential credential = FacebookAuthProvider.getCredential(
+            accessToken: facebookResult.accessToken.token);
+        await _auth.signInWithCredential(credential);
+      } on PlatformException catch (ex) {
+        processPlatformException(context, ex);
       } catch (e) {
-        showErrorDialog(context, e.details);
+        showErrorDialog(context, e.message);
       }
     }
+    _setBusy(false);
   }
 
   @override
   Widget build(BuildContext context) {
     _buttons = {
       ProvidersTypes.facebook:
-          providersDefinitions(context)[ProvidersTypes.facebook].copyWith(onSelected: _handleFacebookSignIn),
+          providersDefinitions(context)[ProvidersTypes.facebook]
+              .copyWith(onSelected: _handleFacebookSignIn),
       ProvidersTypes.google:
-          providersDefinitions(context)[ProvidersTypes.google].copyWith(onSelected: _handleGoogleSignIn),
-      ProvidersTypes.email:
-          providersDefinitions(context)[ProvidersTypes.email].copyWith(onSelected: _handleEmailSignIn),
+          providersDefinitions(context)[ProvidersTypes.google]
+              .copyWith(onSelected: _handleGoogleSignIn),
+      ProvidersTypes.email: providersDefinitions(context)[ProvidersTypes.email]
+          .copyWith(onSelected: _handleEmailSignIn),
     };
 
-    return new Container(
-        // padding: widget.padding,
-        child: new Column(
+    return Container(
+      // padding: widget.padding,
+      child: Stack(
+        children: <Widget>[
+          Column(
             children: widget.providers.map((p) {
-      return new Container(
-          padding: EdgeInsets.only(bottom: widget.bottomPadding), child: _buttons[p] ?? new Container());
-    }).toList()));
+              return Container(
+                padding: EdgeInsets.only(bottom: widget.bottomPadding),
+                child: _buttons[p] ?? Container(),
+              );
+            }).toList(),
+          ),
+          _busy
+              ? Opacity(
+                  child: ModalBarrier(
+                    dismissible: false,
+                    color: Colors.white,
+                  ),
+                  opacity: 0.5,
+                )
+              : Container(),
+          _busy ? CircularProgressIndicator() : Container(),
+        ],
+        alignment: Alignment.center,
+      ),
+    );
   }
 
   void _followProvider(String value) {

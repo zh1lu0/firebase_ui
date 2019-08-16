@@ -3,11 +3,13 @@ import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_ui/l10n/localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_facebook_login/flutter_facebook_login.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 enum ProvidersTypes { email, google, facebook, phone }
 
+final String kLoginEmail = 'kLoginEmail';
 final GoogleSignIn googleSignIn = new GoogleSignIn();
 final FacebookLogin facebookLogin = new FacebookLogin();
 
@@ -75,7 +77,9 @@ class ButtonDescription extends StatelessWidget {
   }
 }
 
-Map<ProvidersTypes, ButtonDescription> providersDefinitions(BuildContext context) => {
+Map<ProvidersTypes, ButtonDescription> providersDefinitions(
+        BuildContext context) =>
+    {
       ProvidersTypes.facebook: new ButtonDescription(
           color: const Color.fromRGBO(59, 87, 157, 1.0),
           logo: "fb-logo.png",
@@ -96,7 +100,27 @@ Map<ProvidersTypes, ButtonDescription> providersDefinitions(BuildContext context
           labelColor: Colors.white),
     };
 
-Future<Null> showErrorDialog(BuildContext context, String message, {String title}) {
+void processPlatformException(BuildContext context, PlatformException ex) {
+  switch (ex.code) {
+    case 'ERROR_INVALID_CREDENTIAL':
+      String msg = FFULocalizations.of(context).errorInvalidCredential;
+      showErrorDialog(context, msg);
+      break;
+    case 'ERROR_USER_DISABLED':
+      String msg = FFULocalizations.of(context).errorUserDisabled;
+      showErrorDialog(context, msg);
+      break;
+    case 'ERROR_ACCOUNT_EXISTS_WITH_DIFFERENT_CREDENTIAL':
+      String msg = FFULocalizations.of(context).errorAccountExisted;
+      showErrorDialog(context, msg);
+      break;
+    default:
+      showErrorDialog(context, ex.message);
+  }
+}
+
+Future<Null> showErrorDialog(BuildContext context, String message,
+    {String title}) {
   return showDialog<Null>(
     context: context,
     barrierDismissible: false, // user must tap button!

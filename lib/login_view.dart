@@ -54,7 +54,6 @@ class _LoginViewState extends State<LoginView> {
   void _initDynamicLinks() async {
     final PendingDynamicLinkData data = await FirebaseDynamicLinks.instance.getInitialLink();
     final Uri deepLink = data?.link;
-    print('initial link $deepLink');
     if (deepLink != null) {
       if (await _auth.isSignInWithEmailLink(deepLink.toString())) {
         await _handleLinkSignIn(deepLink.toString());
@@ -69,7 +68,6 @@ class _LoginViewState extends State<LoginView> {
         }
       }
     }, onError: (OnLinkErrorException e) async {
-      print('onLinkError');
       print(e.message);
     });
   }
@@ -101,7 +99,6 @@ class _LoginViewState extends State<LoginView> {
       Navigator.of(context, rootNavigator: true).pop();
       Navigator.popUntil(context, (Route<dynamic> route) => route.isFirst);
     } on PlatformException catch (ex) {
-      print('exception');
       Navigator.of(context, rootNavigator: true).pop();
       processPlatformException(context, ex);
     } catch (e) {
@@ -128,39 +125,45 @@ class _LoginViewState extends State<LoginView> {
 
   _handleGoogleSignIn() async {
     _setBusy(true);
-    GoogleSignInAccount googleUser = await googleSignIn.signIn();
-    if (googleUser != null) {
-      GoogleSignInAuthentication googleAuth = await googleUser.authentication;
-      if (googleAuth.accessToken != null) {
-        try {
+    try {
+      GoogleSignInAccount googleUser = await googleSignIn.signIn();
+      if (googleUser != null) {
+        GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+        if (googleAuth.accessToken != null) {
           AuthCredential credential =
               GoogleAuthProvider.getCredential(idToken: googleAuth.idToken, accessToken: googleAuth.accessToken);
           await _auth.signInWithCredential(credential);
-        } on PlatformException catch (ex) {
+        } else {
           _setBusy(false);
-          processPlatformException(context, ex);
-        } catch (e) {
-          _setBusy(false);
-          showErrorDialog(context, e.details);
         }
+      } else {
+        _setBusy(false);
       }
+    } on PlatformException catch (ex) {
+      _setBusy(false);
+      processPlatformException(context, ex);
+    } catch (e) {
+      _setBusy(false);
+      showErrorDialog(context, e.details);
     }
   }
 
   _handleFacebookSignIn() async {
     _setBusy(true);
-    FacebookLoginResult facebookResult = await facebookLogin.logInWithReadPermissions(['email']);
-    if (facebookResult.accessToken != null) {
-      try {
+    try {
+      FacebookLoginResult facebookResult = await facebookLogin.logInWithReadPermissions(['email']);
+      if (facebookResult.accessToken != null) {
         AuthCredential credential = FacebookAuthProvider.getCredential(accessToken: facebookResult.accessToken.token);
         await _auth.signInWithCredential(credential);
-      } on PlatformException catch (ex) {
+      } else {
         _setBusy(false);
-        processPlatformException(context, ex);
-      } catch (e) {
-        _setBusy(false);
-        showErrorDialog(context, e.message);
       }
+    } on PlatformException catch (ex) {
+      _setBusy(false);
+      processPlatformException(context, ex);
+    } catch (e) {
+      _setBusy(false);
+      showErrorDialog(context, e.message);
     }
   }
 

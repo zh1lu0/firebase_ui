@@ -137,13 +137,14 @@ class _LoginViewState extends State<LoginView> {
               GoogleAuthProvider.getCredential(idToken: googleAuth.idToken, accessToken: googleAuth.accessToken);
           await _auth.signInWithCredential(credential);
         } on PlatformException catch (ex) {
+          _setBusy(false);
           processPlatformException(context, ex);
         } catch (e) {
+          _setBusy(false);
           showErrorDialog(context, e.details);
         }
       }
     }
-    _setBusy(false);
   }
 
   _handleFacebookSignIn() async {
@@ -154,12 +155,13 @@ class _LoginViewState extends State<LoginView> {
         AuthCredential credential = FacebookAuthProvider.getCredential(accessToken: facebookResult.accessToken.token);
         await _auth.signInWithCredential(credential);
       } on PlatformException catch (ex) {
+        _setBusy(false);
         processPlatformException(context, ex);
       } catch (e) {
+        _setBusy(false);
         showErrorDialog(context, e.message);
       }
     }
-    _setBusy(false);
   }
 
   @override

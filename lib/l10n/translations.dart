@@ -9,8 +9,19 @@ class TranslationBundle {
   String get signUpTitle => parent?.signUpTitle;
 
   String get emailLabel => parent?.emailLabel;
+  String get emailCheckError => parent?.emailCheckError;
 
   String get nextButtonLabel => parent?.nextButtonLabel;
+
+  String get emailSentTitle => parent?.emailSentTitle;
+  String emailSentMessage(String email) => parent?.emailSentMessage(email);
+  String get troubleGettingEmailLabel => parent?.troubleGettingEmailLabel;
+  String get troubleGettingEmailMessage => parent?.troubleGettingEmailMessage;
+  String get resendButtonLabel => parent?.resendButtonLabel;
+
+  String get emailLinkChecking => parent?.emailLinkChecking;
+  String get emailConfirmTitle => parent?.emailConfirmTitle;
+  String get emailConfirmMessage => parent?.emailConfirmMessage;
 
   String get cancelButtonLabel => parent?.cancelButtonLabel;
 
@@ -50,91 +61,9 @@ class TranslationBundle {
   String get errorInvalidCredential => parent?.errorInvalidCredential;
   String get errorAccountExisted => parent?.errorAccountExisted;
 
-  allReadyEmailMessage(String email, String providerName) =>
-      parent?.allReadyEmailMessage(email, providerName);
+  allReadyEmailMessage(String email, String providerName) => parent?.allReadyEmailMessage(email, providerName);
 
   recoverDialog(String email) => parent?.recoverDialog(email);
-}
-
-// ignore: camel_case_types
-class _Bundle_fr extends TranslationBundle {
-  const _Bundle_fr() : super(null);
-
-  @override
-  String get welcome => r'Bienvenue';
-  @override
-  String get signUpTitle => 'Enregistrer un nouvel utilisateur';
-  @override
-  String get emailLabel => r'Adresse mail';
-  @override
-  String get passwordLabel => r'Mot de passe';
-
-  @override
-  String get passwordCheckLabel => r'Confirmez le mot de passe';
-
-  @override
-  String get passwordCheckError => r'Les deux mots de passe sont différents.';
-
-  @override
-  String get nextButtonLabel => r'SUIVANT';
-  @override
-  String get cancelButtonLabel => r'ANNULER';
-  @override
-  String get signInLabel => r'CONNEXION';
-
-  @override
-  String get saveLabel => r'ENREGISTRER';
-
-  @override
-  String get signInTitle => r'Connexion';
-
-  @override
-  String get troubleSigningInLabel => 'Difficultés à se connecter ?';
-
-  @override
-  String get passwordInvalidMessage =>
-      'Le mot de passe est invalide ou l\'utilisateur n\'a pas de mot de passe.';
-
-  @override
-  String get recoverPasswordTitle => r'Récupérer mot de passe';
-
-  @override
-  String get recoverHelpLabel =>
-      r'Obtenez des instructions envoyées à cet e-mail ' +
-      'pour expliquer comment réinitialiser votre mot de passe';
-
-  @override
-  String get sendButtonLabel => r'ENVOYER';
-
-  @override
-  String get nameLabel => r'Nom et prénom';
-
-  @override
-  String get errorOccurred => r'Une erreur est survenue';
-
-  @override
-  allReadyEmailMessage(String email, String providerName) {
-    return '''Vous avez déjà utilisé $email.
-Connectez-vous avec $providerName pour continuer.''';
-  }
-
-  @override
-  recoverDialog(String email) {
-    return 'Suivez les instructions envoyées à $email ' +
-        'pour retrouver votre mot de passe';
-  }
-
-  String get passwordLengthMessage =>
-      r'Le mot de passe doit comporter 6 caractères ou plus';
-
-  @override
-  String get signInFacebook => r'Connexion avec Facebook';
-
-  @override
-  String get signInGoogle => r'Connexion avec Google';
-
-  @override
-  String get signInEmail => r'Connexion avec email';
 }
 
 // ignore: camel_case_types
@@ -147,6 +76,38 @@ class _Bundle_en extends TranslationBundle {
   String get signUpTitle => 'Register new user';
   @override
   String get emailLabel => r'Email';
+  @override
+  String get emailCheckError => r'Invalid mail address';
+
+  @override
+  String get emailSentTitle => r'Sign-in email sent';
+  @override
+  String emailSentMessage(String email) {
+    return 'A sign-in email with additional instructions was sent to $email. Check your email to complete sign-in.';
+  }
+
+  @override
+  String get troubleGettingEmailLabel => r'Trouble getting email?';
+  @override
+  String get troubleGettingEmailMessage => r'''
+Try these common fixes:
+
+• Check if the email was marked as spam or filtered.
+• Check your internet connection.
+• Check that you did not misspell your email.
+• Check that your inbox space is not running out or other inbox settings related issues.
+
+If the steps above didn't work, you can resend the email. Note that this will deactivate the link in the older email.
+  ''';
+  @override
+  String get resendButtonLabel => r'RESEND';
+  @override
+  String get emailLinkChecking => r'Login by the link...';
+  @override
+  String get emailConfirmTitle => r'Confirm email';
+  @override
+  String get emailConfirmMessage => r'Confirm your email to complete sign in';
+
   @override
   String get passwordLabel => r'Password';
 
@@ -172,16 +133,13 @@ class _Bundle_en extends TranslationBundle {
   String get troubleSigningInLabel => 'Trouble signing in ?';
 
   @override
-  String get passwordInvalidMessage =>
-      'The password is invalid or the user does not have password.';
+  String get passwordInvalidMessage => 'The password is invalid or the user does not have password.';
 
   @override
   String get recoverPasswordTitle => r'Recover password';
 
   @override
-  String get recoverHelpLabel =>
-      r'Get instructions sent to this email ' +
-      'that explain how to reset your password';
+  String get recoverHelpLabel => r'Get instructions sent to this email ' + 'that explain how to reset your password';
 
   @override
   String get sendButtonLabel => r'SEND';
@@ -211,8 +169,7 @@ Sign in with $providerName to continue.''';
     return 'Follow the instructions sent to $email to recover your password';
   }
 
-  String get passwordLengthMessage =>
-      r'The password must be 6 characters long or more';
+  String get passwordLengthMessage => r'The password must be 6 characters long or more';
 
   @override
   String get signInFacebook => r'Sign in with Facebook';
@@ -225,6 +182,85 @@ Sign in with $providerName to continue.''';
 }
 
 // ignore: camel_case_types
+class _Bundle_fr extends TranslationBundle {
+  const _Bundle_fr() : super(null);
+
+  @override
+  String get welcome => r'Bienvenue';
+  @override
+  String get signUpTitle => 'Enregistrer un nouvel utilisateur';
+  @override
+  String get emailLabel => r'Adresse mail';
+  @override
+  String get emailCheckError => r'Adresse mail invalide';
+  @override
+  String get passwordLabel => r'Mot de passe';
+
+  @override
+  String get passwordCheckLabel => r'Confirmez le mot de passe';
+
+  @override
+  String get passwordCheckError => r'Les deux mots de passe sont différents.';
+
+  @override
+  String get nextButtonLabel => r'SUIVANT';
+  @override
+  String get cancelButtonLabel => r'ANNULER';
+  @override
+  String get signInLabel => r'CONNEXION';
+
+  @override
+  String get saveLabel => r'ENREGISTRER';
+
+  @override
+  String get signInTitle => r'Connexion';
+
+  @override
+  String get troubleSigningInLabel => 'Difficultés à se connecter ?';
+
+  @override
+  String get passwordInvalidMessage => 'Le mot de passe est invalide ou l\'utilisateur n\'a pas de mot de passe.';
+
+  @override
+  String get recoverPasswordTitle => r'Récupérer mot de passe';
+
+  @override
+  String get recoverHelpLabel =>
+      r'Obtenez des instructions envoyées à cet e-mail ' + 'pour expliquer comment réinitialiser votre mot de passe';
+
+  @override
+  String get sendButtonLabel => r'ENVOYER';
+
+  @override
+  String get nameLabel => r'Nom et prénom';
+
+  @override
+  String get errorOccurred => r'Une erreur est survenue';
+
+  @override
+  allReadyEmailMessage(String email, String providerName) {
+    return '''Vous avez déjà utilisé $email.
+Connectez-vous avec $providerName pour continuer.''';
+  }
+
+  @override
+  recoverDialog(String email) {
+    return 'Suivez les instructions envoyées à $email ' + 'pour retrouver votre mot de passe';
+  }
+
+  String get passwordLengthMessage => r'Le mot de passe doit comporter 6 caractères ou plus';
+
+  @override
+  String get signInFacebook => r'Connexion avec Facebook';
+
+  @override
+  String get signInGoogle => r'Connexion avec Google';
+
+  @override
+  String get signInEmail => r'Connexion avec email';
+}
+
+// ignore: camel_case_types
 class _Bundle_de extends TranslationBundle {
   const _Bundle_de() : super(null);
 
@@ -234,6 +270,8 @@ class _Bundle_de extends TranslationBundle {
   String get signUpTitle => 'Neuen Benutzer registrieren';
   @override
   String get emailLabel => r'Email';
+  @override
+  String get emailCheckError => r'Ungültige Mailadresse';
   @override
   String get passwordLabel => r'Passwort';
 
@@ -259,16 +297,13 @@ class _Bundle_de extends TranslationBundle {
   String get troubleSigningInLabel => 'Probleme beim Anmelden?';
 
   @override
-  String get passwordInvalidMessage =>
-      'Das Passwort ist ungültig oder der Bentutzer hat kein Passwort.';
+  String get passwordInvalidMessage => 'Das Passwort ist ungültig oder der Bentutzer hat kein Passwort.';
 
   @override
   String get recoverPasswordTitle => r'Passwort wiederherstellen';
 
   @override
-  String get recoverHelpLabel =>
-      r'Erhalte Anweisungen zum Wiederherstellen des Passworts ' +
-      'an diese Email';
+  String get recoverHelpLabel => r'Erhalte Anweisungen zum Wiederherstellen des Passworts ' + 'an diese Email';
 
   @override
   String get sendButtonLabel => r'SENDEN';
@@ -290,8 +325,7 @@ Mit $providerName anmelden um fortzufarhen.''';
     return 'Befolge die Anweisungen, welche an $email gesendet wurden um das Passswort wiederherzustellen';
   }
 
-  String get passwordLengthMessage =>
-      r'Das Passwort muss 6 oder mehr Zeichen haben';
+  String get passwordLengthMessage => r'Das Passwort muss 6 oder mehr Zeichen haben';
 
   @override
   String get signInFacebook => r'Mit Facebook anmelden';
@@ -313,6 +347,8 @@ class _Bundle_pt extends TranslationBundle {
   String get signUpTitle => 'Registrar novo usuário';
   @override
   String get emailLabel => r'E-mail';
+  @override
+  String get emailCheckError => r'Endereço de email inválido';
   @override
   String get passwordLabel => r'Senha';
 
@@ -338,16 +374,14 @@ class _Bundle_pt extends TranslationBundle {
   String get troubleSigningInLabel => 'Problemas ao fazer login ?';
 
   @override
-  String get passwordInvalidMessage =>
-      'A senha é inválida ou o usuário não possui uma senha.';
+  String get passwordInvalidMessage => 'A senha é inválida ou o usuário não possui uma senha.';
 
   @override
   String get recoverPasswordTitle => r'Recuperar a senha';
 
   @override
   String get recoverHelpLabel =>
-      r'Siga as instruções enviadas para esse e-mail ' +
-      'para descobrir como redefinir sua senha';
+      r'Siga as instruções enviadas para esse e-mail ' + 'para descobrir como redefinir sua senha';
 
   @override
   String get sendButtonLabel => r'ENVIAR';
@@ -369,8 +403,7 @@ Faça login com o $providerName para continuar.''';
     return 'Siga as instruções enviadas para $email para recuperar sua senha';
   }
 
-  String get passwordLengthMessage =>
-      r'A senha deve ter pelo menos 6 caracteres';
+  String get passwordLengthMessage => r'A senha deve ter pelo menos 6 caracteres';
 
   @override
   String get signInFacebook => r'Login com o Facebook';
@@ -390,6 +423,8 @@ class _Bundle_es extends TranslationBundle {
   String get welcome => r'Bienvenido';
   @override
   String get emailLabel => r'Email';
+  @override
+  String get emailCheckError => r'Dirección de correo inválida';
   @override
   String get passwordLabel => r'Contraseña';
 
@@ -415,16 +450,14 @@ class _Bundle_es extends TranslationBundle {
   String get troubleSigningInLabel => 'Problemas para entrar ?';
 
   @override
-  String get passwordInvalidMessage =>
-      'La contraseña es inválida o el usuario no tiene contraseña.';
+  String get passwordInvalidMessage => 'La contraseña es inválida o el usuario no tiene contraseña.';
 
   @override
   String get recoverPasswordTitle => r'Recuperar contraseña';
 
   @override
   String get recoverHelpLabel =>
-      r'Sigue las instrucciones enviadas a este email ' +
-      'para descubrir cómo reiniciar tu contraseña';
+      r'Sigue las instrucciones enviadas a este email ' + 'para descubrir cómo reiniciar tu contraseña';
 
   @override
   String get sendButtonLabel => r'ENVIAR';
@@ -446,8 +479,7 @@ Entra con $providerName para continuar.''';
     return 'Siga las instrucciones enviadas a $email para recuperar tu contraseña';
   }
 
-  String get passwordLengthMessage =>
-      r'La contraseña debe tener 6 o más caracteres';
+  String get passwordLengthMessage => r'La contraseña debe tener 6 o más caracteres';
 
   @override
   String get signInFacebook => r'Entrar con Facebook';

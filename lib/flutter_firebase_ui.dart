@@ -2,27 +2,12 @@ library firebase_ui;
 
 import 'package:flutter/material.dart';
 
+import 'email_link_parameter.dart';
 import 'login_view.dart';
 import 'utils.dart';
 
+export 'email_link_parameter.dart';
 export 'utils.dart';
-
-class EmailLinkParameter {
-  final String url;
-  final bool handleCodeInApp;
-  final String iOSBundleID;
-  final String androidPackageName;
-  final bool androidInstallIfNotAvailable;
-  final String androidMinimumVersion;
-
-  EmailLinkParameter(
-      {@required this.url,
-      @required this.handleCodeInApp,
-      @required this.iOSBundleID,
-      @required this.androidPackageName,
-      @required this.androidInstallIfNotAvailable,
-      @required this.androidMinimumVersion});
-}
 
 class SignInScreen extends StatefulWidget {
   SignInScreen(
@@ -65,11 +50,9 @@ class _SignInScreenState extends State<SignInScreen> {
 
   bool get _passwordCheck => widget.signUpPasswordCheck ?? false;
   bool get _emailWithLink => widget.emailWithLink ?? false;
-  EmailLinkParameter get _emailLinkParameter =>
-      widget.emailLinkParameter ?? null;
+  EmailLinkParameter get _emailLinkParameter => widget.emailLinkParameter ?? null;
 
-  List<ProvidersTypes> get _providers =>
-      widget.providers ?? [ProvidersTypes.email];
+  List<ProvidersTypes> get _providers => widget.providers ?? [ProvidersTypes.email];
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -90,8 +73,7 @@ class _SignInScreenState extends State<SignInScreen> {
                   _header,
                   Expanded(
                     child: Padding(
-                      padding: EdgeInsets.symmetric(
-                          horizontal: widget.horizontalPadding),
+                      padding: EdgeInsets.symmetric(horizontal: widget.horizontalPadding),
                       child: LoginView(
                         providers: _providers,
                         emailWithLink: _emailWithLink,

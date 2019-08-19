@@ -6,6 +6,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_facebook_login/flutter_facebook_login.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import 'email_link_parameter.dart';
+import 'progress_dialog.dart';
 
 enum ProvidersTypes { email, google, facebook, phone }
 
@@ -58,17 +62,17 @@ class ButtonDescription extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     VoidCallback _onSelected = onSelected ?? () => {};
-    return new RaisedButton(
+    return RaisedButton(
         color: color,
-        child: new Row(
+        child: Row(
           children: <Widget>[
-            new Container(
+            Container(
                 padding: const EdgeInsets.fromLTRB(16.0, 16.0, 32.0, 16.0),
-                child: new Image.asset('assets/$logo', package: 'firebase_ui')),
-            new Expanded(
-              child: new Text(
+                child: Image.asset('assets/$logo', package: 'firebase_ui')),
+            Expanded(
+              child: Text(
                 label,
-                style: new TextStyle(color: labelColor),
+                style: TextStyle(color: labelColor),
               ),
             )
           ],
@@ -77,9 +81,7 @@ class ButtonDescription extends StatelessWidget {
   }
 }
 
-Map<ProvidersTypes, ButtonDescription> providersDefinitions(
-        BuildContext context) =>
-    {
+Map<ProvidersTypes, ButtonDescription> providersDefinitions(BuildContext context) => {
       ProvidersTypes.facebook: new ButtonDescription(
           color: const Color.fromRGBO(59, 87, 157, 1.0),
           logo: "fb-logo.png",
@@ -114,32 +116,59 @@ void processPlatformException(BuildContext context, PlatformException ex) {
       String msg = FFULocalizations.of(context).errorAccountExisted;
       showErrorDialog(context, msg);
       break;
+    case 'ERROR_INVALID_ACTION_CODE':
+      String msg = ex.message;
+      showErrorDialog(context, msg);
+      break;
     default:
+      print(ex.code);
       showErrorDialog(context, ex.message);
   }
 }
 
-Future<Null> showErrorDialog(BuildContext context, String message,
-    {String title}) {
+Future<void> sendSingInLink(BuildContext context, String email, EmailLinkParameter emailLinkParameter) async {
+  final FirebaseAuth auth = FirebaseAuth.instance;
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  await prefs.setString(kLoginEmail, email);
+  await auth.sendSignInWithEmailLink(
+    email: email,
+    url: emailLinkParameter.url,
+    handleCodeInApp: emailLinkParameter.handleCodeInApp,
+    iOSBundleID: emailLinkParameter.iOSBundleID,
+    androidPackageName: emailLinkParameter.androidPackageName,
+    androidInstallIfNotAvailable: emailLinkParameter.androidInstallIfNotAvailable,
+    androidMinimumVersion: emailLinkParameter.androidMinimumVersion,
+  );
+}
+
+void showSigningDialog(BuildContext context) {
+  showDialog<dynamic>(
+    context: context,
+    barrierDismissible: false,
+    builder: (BuildContext context) {
+      return ProgressDialog(
+        message: FFULocalizations.of(context).emailLinkChecking,
+      );
+    },
+  );
+}
+
+Future<Null> showErrorDialog(BuildContext context, String message, {String title}) {
   return showDialog<Null>(
     context: context,
     barrierDismissible: false, // user must tap button!
-    builder: (BuildContext context) => new AlertDialog(
-      title: title != null ? new Text(title) : null,
-      content: new SingleChildScrollView(
-        child: new ListBody(
+    builder: (BuildContext context) => AlertDialog(
+      title: title != null ? Text(title) : null,
+      content: SingleChildScrollView(
+        child: ListBody(
           children: <Widget>[
-            new Text(message ?? FFULocalizations.of(context).errorOccurred),
+            Text(message ?? FFULocalizations.of(context).errorOccurred),
           ],
         ),
       ),
       actions: <Widget>[
-        new FlatButton(
-          child: new Row(
-            children: <Widget>[
-              new Text(FFULocalizations.of(context).cancelButtonLabel),
-            ],
-          ),
+        FlatButton(
+          child: Text(FFULocalizations.of(context).cancelButtonLabel),
           onPressed: () {
             Navigator.of(context).pop();
           },

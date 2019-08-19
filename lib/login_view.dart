@@ -7,6 +7,8 @@ import 'package:flutter_facebook_login/flutter_facebook_login.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'email_confirmation_dialog.dart';
+import 'email_link_parameter.dart';
 import 'email_view.dart';
 import 'utils.dart';
 
@@ -50,23 +52,20 @@ class _LoginViewState extends State<LoginView> {
   }
 
   void _initDynamicLinks() async {
-    final PendingDynamicLinkData data =
-        await FirebaseDynamicLinks.instance.getInitialLink();
+    final PendingDynamicLinkData data = await FirebaseDynamicLinks.instance.getInitialLink();
     final Uri deepLink = data?.link;
     print('initial link $deepLink');
     if (deepLink != null) {
       if (await _auth.isSignInWithEmailLink(deepLink.toString())) {
-        await _hanleLinkSignIn(deepLink.toString());
+        await _handleLinkSignIn(deepLink.toString());
       }
     }
 
-    FirebaseDynamicLinks.instance.onLink(
-        onSuccess: (PendingDynamicLinkData dynamicLink) async {
+    FirebaseDynamicLinks.instance.onLink(onSuccess: (PendingDynamicLinkData dynamicLink) async {
       final Uri deepLink = dynamicLink?.link;
-      print('on link $deepLink');
       if (deepLink != null) {
         if (await _auth.isSignInWithEmailLink(deepLink.toString())) {
-          await _hanleLinkSignIn(deepLink.toString());
+          await _handleLinkSignIn(deepLink.toString());
         }
       }
     }, onError: (OnLinkErrorException e) async {
@@ -75,21 +74,39 @@ class _LoginViewState extends State<LoginView> {
     });
   }
 
-  _hanleLinkSignIn(String link) async {
+  Future<String> _showEmailConfirmationDialog() {
+    return showDialog<String>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) => EmailConfirmationDialog(),
+    );
+  }
+
+  _handleLinkSignIn(String link) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String email = prefs.getString(kLoginEmail) ?? "";
-    print("get email from shared preferences $email and $link");
     if (email == "") {
-      // TODO:  prompt to input email
-      return false;
+      String promptEmail = await _showEmailConfirmationDialog();
+      if (promptEmail != '') {
+        email = promptEmail;
+      } else {
+        return false;
+      }
     }
     try {
+      showSigningDialog(context);
+      await Future.delayed(Duration(milliseconds: 50));
       await _auth.signInWithEmailAndLink(email: email, link: link);
+      prefs.remove(kLoginEmail);
+      Navigator.of(context, rootNavigator: true).pop();
       Navigator.popUntil(context, (Route<dynamic> route) => route.isFirst);
     } on PlatformException catch (ex) {
+      print('exception');
+      Navigator.of(context, rootNavigator: true).pop();
       processPlatformException(context, ex);
     } catch (e) {
-      showErrorDialog(context, e.details);
+      Navigator.of(context, rootNavigator: true).pop();
+      showErrorDialog(context, e.message);
     }
   }
 
@@ -116,8 +133,8 @@ class _LoginViewState extends State<LoginView> {
       GoogleSignInAuthentication googleAuth = await googleUser.authentication;
       if (googleAuth.accessToken != null) {
         try {
-          AuthCredential credential = GoogleAuthProvider.getCredential(
-              idToken: googleAuth.idToken, accessToken: googleAuth.accessToken);
+          AuthCredential credential =
+              GoogleAuthProvider.getCredential(idToken: googleAuth.idToken, accessToken: googleAuth.accessToken);
           await _auth.signInWithCredential(credential);
         } on PlatformException catch (ex) {
           processPlatformException(context, ex);
@@ -131,12 +148,10 @@ class _LoginViewState extends State<LoginView> {
 
   _handleFacebookSignIn() async {
     _setBusy(true);
-    FacebookLoginResult facebookResult =
-        await facebookLogin.logInWithReadPermissions(['email']);
+    FacebookLoginResult facebookResult = await facebookLogin.logInWithReadPermissions(['email']);
     if (facebookResult.accessToken != null) {
       try {
-        AuthCredential credential = FacebookAuthProvider.getCredential(
-            accessToken: facebookResult.accessToken.token);
+        AuthCredential credential = FacebookAuthProvider.getCredential(accessToken: facebookResult.accessToken.token);
         await _auth.signInWithCredential(credential);
       } on PlatformException catch (ex) {
         processPlatformException(context, ex);
@@ -151,13 +166,11 @@ class _LoginViewState extends State<LoginView> {
   Widget build(BuildContext context) {
     _buttons = {
       ProvidersTypes.facebook:
-          providersDefinitions(context)[ProvidersTypes.facebook]
-              .copyWith(onSelected: _handleFacebookSignIn),
+          providersDefinitions(context)[ProvidersTypes.facebook].copyWith(onSelected: _handleFacebookSignIn),
       ProvidersTypes.google:
-          providersDefinitions(context)[ProvidersTypes.google]
-              .copyWith(onSelected: _handleGoogleSignIn),
-      ProvidersTypes.email: providersDefinitions(context)[ProvidersTypes.email]
-          .copyWith(onSelected: _handleEmailSignIn),
+          providersDefinitions(context)[ProvidersTypes.google].copyWith(onSelected: _handleGoogleSignIn),
+      ProvidersTypes.email:
+          providersDefinitions(context)[ProvidersTypes.email].copyWith(onSelected: _handleEmailSignIn),
     };
 
     return Container(

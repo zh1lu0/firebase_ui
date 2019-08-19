@@ -1,9 +1,11 @@
+import 'package:email_validator/email_validator.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_ui/flutter_firebase_ui.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/services.dart' show PlatformException;
 
+import 'email_link_parameter.dart';
 import 'l10n/localization.dart';
+import 'link_sent_view.dart';
 import 'password_view.dart';
 import 'sign_up_view.dart';
 import 'utils.dart';
@@ -13,19 +15,16 @@ class EmailView extends StatefulWidget {
   final bool passwordCheck;
   final EmailLinkParameter emailLinkParameter;
 
-  EmailView(
-      {Key key,
-      this.emailWithLink,
-      this.passwordCheck,
-      this.emailLinkParameter})
-      : super(key: key);
+  EmailView({Key key, this.emailWithLink, this.passwordCheck, this.emailLinkParameter}) : super(key: key);
 
   @override
   _EmailViewState createState() => new _EmailViewState();
 }
 
 class _EmailViewState extends State<EmailView> {
-  final TextEditingController _controllerEmail = new TextEditingController();
+  final TextEditingController _controllerEmail = TextEditingController();
+  String _errorMessage;
+  bool _loading = false;
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -42,11 +41,16 @@ class _EmailViewState extends State<EmailView> {
                   TextField(
                     controller: _controllerEmail,
                     autofocus: true,
+                    onChanged: (_) => setState(() {
+                      _errorMessage = null;
+                    }),
                     onSubmitted: _submit,
                     keyboardType: TextInputType.emailAddress,
                     autocorrect: false,
                     decoration: new InputDecoration(
-                        labelText: FFULocalizations.of(context).emailLabel),
+                      labelText: FFULocalizations.of(context).emailLabel,
+                      errorText: _errorMessage,
+                    ),
                   ),
                 ],
               ),
@@ -54,24 +58,13 @@ class _EmailViewState extends State<EmailView> {
           },
         ),
         persistentFooterButtons: <Widget>[
-          ButtonBar(
-            alignment: MainAxisAlignment.center,
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              FlatButton(
+          _loading
+              ? CircularProgressIndicator()
+              : FlatButton(
                   onPressed: () => _connexion(context),
-                  child: Row(
-                    children: <Widget>[
-                      Text(FFULocalizations.of(context).nextButtonLabel),
-                    ],
-                  )),
-            ],
-          )
+                  child: Text(FFULocalizations.of(context).nextButtonLabel),
+                ),
         ],
-        floatingActionButton: FloatingActionButton(
-          onPressed: null,
-          child: Icon(Icons.add),
-        ),
       );
 
   _submit(String submitted) {
@@ -79,40 +72,45 @@ class _EmailViewState extends State<EmailView> {
   }
 
   _connexion(BuildContext context) async {
+    if (_loading) return;
 
+    if (!EmailValidator.validate(_controllerEmail.text)) {
+      setState(() {
+        _errorMessage = FFULocalizations.of(context).emailCheckError;
+      });
+      return;
+    }
+    setState(() {
+      _loading = true;
+    });
     try {
       final FirebaseAuth auth = FirebaseAuth.instance;
-      List<String> providers =
-          await auth.fetchSignInMethodsForEmail(email: _controllerEmail.text);
+      List<String> providers = await auth.fetchSignInMethodsForEmail(email: _controllerEmail.text);
 
-      if (providers == null || providers.isEmpty) {
-        // New User
-        bool connected = await Navigator.of(context).push(
-          MaterialPageRoute<bool>(builder: (BuildContext context) {
-            return SignUpView(_controllerEmail.text, widget.passwordCheck);
-          }),
-        );
-
-        if (connected) {
-          Navigator.pop(context);
-        }
-      } else if (providers.contains('password')) {
-        if (widget.emailWithLink) {
+      if (providers == null || providers.isEmpty || providers.contains('password') || providers.contains("emailLink")) {
+        // use email/link to sign up or sign in
+        if (providers.contains("emailLink") || widget.emailWithLink) {
           // Using email and link
-          SharedPreferences prefs = await SharedPreferences.getInstance();
-          await prefs.setString(kLoginEmail, _controllerEmail.text);
-          await auth.sendSignInWithEmailLink(
-            email: _controllerEmail.text,
-            url: widget.emailLinkParameter.url,
-            handleCodeInApp: widget.emailLinkParameter.handleCodeInApp,
-            iOSBundleID: widget.emailLinkParameter.iOSBundleID,
-            androidPackageName: widget.emailLinkParameter.androidPackageName,
-            androidInstallIfNotAvailable:
-                widget.emailLinkParameter.androidInstallIfNotAvailable,
-            androidMinimumVersion:
-                widget.emailLinkParameter.androidMinimumVersion,
+          await sendSingInLink(context, _controllerEmail.text, widget.emailLinkParameter);
+          await Navigator.of(context).push(
+            MaterialPageRoute(builder: (BuildContext context) {
+              return LinkSentView(
+                email: _controllerEmail.text,
+                emailLinkParameter: widget.emailLinkParameter,
+              );
+            }),
           );
-          print('link sended');
+        } else if (providers == null || providers.isEmpty) {
+          // New User
+          bool connected = await Navigator.of(context).push(
+            MaterialPageRoute<bool>(builder: (BuildContext context) {
+              return SignUpView(email: _controllerEmail.text, passwordCheck: widget.passwordCheck);
+            }),
+          );
+
+          if (connected) {
+            Navigator.pop(context);
+          }
         } else {
           // Using email and password
           bool connected = await Navigator.of(context).push(
@@ -126,14 +124,20 @@ class _EmailViewState extends State<EmailView> {
           }
         }
       } else {
-        String provider = await _showDialogSelectOtherProvider(
-            _controllerEmail.text, providers);
+        print("providers $providers");
+        String provider = await _showDialogSelectOtherProvider(_controllerEmail.text, providers);
         if (provider.isNotEmpty) {
           Navigator.pop(context, provider);
         }
       }
-    } catch (exception) {
-      print(exception);
+    } on PlatformException catch (ex) {
+      processPlatformException(context, ex);
+    } catch (e) {
+      showErrorDialog(context, e.details);
+    } finally {
+      setState(() {
+        _loading = false;
+      });
     }
   }
 
@@ -142,38 +146,30 @@ class _EmailViewState extends State<EmailView> {
     return showDialog<String>(
       context: context,
       barrierDismissible: false, // user must tap button!
-      builder: (BuildContext context) => new AlertDialog(
-        content: new SingleChildScrollView(
-            child: new ListBody(
-          children: <Widget>[
-            new Text(FFULocalizations.of(context)
-                .allReadyEmailMessage(email, providerName)),
-            new SizedBox(
-              height: 16.0,
-            ),
-            new Column(
-              children: providers.map((String p) {
-                return new RaisedButton(
-                  child: new Row(
-                    children: <Widget>[
-                      new Text(_providerStringToButton(p)),
-                    ],
-                  ),
-                  onPressed: () {
-                    Navigator.of(context).pop(p);
-                  },
-                );
-              }).toList(),
-            )
-          ],
-        )),
+      builder: (BuildContext context) => AlertDialog(
+        content: SingleChildScrollView(
+          child: ListBody(
+            children: <Widget>[
+              Text(FFULocalizations.of(context).allReadyEmailMessage(email, providerName)),
+              SizedBox(
+                height: 16.0,
+              ),
+              Column(
+                children: providers.map((String p) {
+                  return RaisedButton(
+                    child: Text(_providerStringToButton(p)),
+                    onPressed: () {
+                      Navigator.of(context).pop(p);
+                    },
+                  );
+                }).toList(),
+              ),
+            ],
+          ),
+        ),
         actions: <Widget>[
-          new FlatButton(
-            child: new Row(
-              children: <Widget>[
-                new Text(FFULocalizations.of(context).cancelButtonLabel),
-              ],
-            ),
+          FlatButton(
+            child: Text(FFULocalizations.of(context).cancelButtonLabel),
             onPressed: () {
               Navigator.of(context).pop('');
             },

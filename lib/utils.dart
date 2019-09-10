@@ -113,7 +113,8 @@ void processPlatformException(BuildContext context, PlatformException ex) {
       showErrorDialog(context, msg);
       break;
     case 'ERROR_ACCOUNT_EXISTS_WITH_DIFFERENT_CREDENTIAL':
-      String msg = FFULocalizations.of(context).errorAccountExisted;
+//      String msg = FFULocalizations.of(context).errorAccountExisted;
+      String msg = ex.message;
       showErrorDialog(context, msg);
       break;
     case 'ERROR_INVALID_ACTION_CODE':

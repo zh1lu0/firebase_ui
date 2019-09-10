@@ -89,7 +89,7 @@ class _EmailViewState extends State<EmailView> {
 
       if (providers == null || providers.isEmpty || providers.contains('password') || providers.contains("emailLink")) {
         // use email/link to sign up or sign in
-        if (providers.contains("emailLink") || widget.emailWithLink) {
+        if (widget.emailWithLink || (providers != null && providers.contains("emailLink")) ) {
           // Using email and link
           await sendSingInLink(context, _controllerEmail.text, widget.emailLinkParameter);
           await Navigator.of(context).push(
@@ -124,7 +124,6 @@ class _EmailViewState extends State<EmailView> {
           }
         }
       } else {
-        print("providers $providers");
         String provider = await _showDialogSelectOtherProvider(_controllerEmail.text, providers);
         if (provider.isNotEmpty) {
           Navigator.pop(context, provider);
@@ -133,7 +132,7 @@ class _EmailViewState extends State<EmailView> {
     } on PlatformException catch (ex) {
       processPlatformException(context, ex);
     } catch (e) {
-      showErrorDialog(context, e.details);
+      showErrorDialog(context, "Message: $e", title: "Unknown error");
     } finally {
       setState(() {
         _loading = false;
